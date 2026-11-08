@@ -101,7 +101,8 @@ with tempfile.TemporaryDirectory(prefix="notion-public-export-") as temporary:
     prompt = prompt.replace("CHECKSUM_COMMAND", command)
     (out / "SKILL.md").write_text(prompt)
     (out / "SHA256SUMS").write_text(f"{digest}  {archive.name}\n")
-    (out / "release-notes.md").write_text(f"# Customer Hub with AIMN {version}\n\nPublic URL deployment test based on the development package {development_version}.\n\nRead [the full skill instructions]({base}/blob/{tag}/packages/{slug}/{version}/SKILL.md) in Notion AI. Follow the preview and approval steps before creating anything.\n\nThis build has no dependency on the private Lumi Labs Deployments database. Keep the generated state and summary files. The end-to-end Notion AI URL flow is not yet validated.\n")
+    subprocess.run([sys.executable, str(repo / "scripts/write-release-notes.py"), version, development_version], check=True)
+
 bundle = out / f"{slug}-{version}-distribution.zip"
 with zipfile.ZipFile(bundle, "w", compression=zipfile.ZIP_DEFLATED) as zip:
     for name in ["README.md", "SKILL.md", f"{slug}-package.tar.gz", "SHA256SUMS", "release-notes.md"]:

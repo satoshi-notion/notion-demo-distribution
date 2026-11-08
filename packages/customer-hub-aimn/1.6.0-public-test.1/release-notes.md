@@ -1,7 +1,34 @@
 # Customer Hub with AIMN 1.6.0-public-test.1
 
-Public URL deployment test based on the development package 1.6.0.
+One package supports English, Japanese, and Korean. Based on development package 1.6.0.
 
-Read [the full skill instructions](https://github.com/satoshi-notion/notion-demo-distribution/blob/customer-hub-aimn/v1.6.0-public-test.1/packages/customer-hub-aimn/1.6.0-public-test.1/SKILL.md) in Notion AI. Follow the preview and approval steps before creating anything.
+## Copy a prompt into Notion Agent
 
-This build has no dependency on the private Lumi Labs Deployments database. Keep the generated state and summary files. The end-to-end Notion AI URL flow is not yet validated.
+Choose one language below and copy the entire block into a new conversation. Verify the destination in the preview before approving.
+
+### English
+
+```text
+Run the skill at this URL:
+https://raw.githubusercontent.com/satoshi-notion/notion-demo-distribution/customer-hub-aimn/v1.6.0-public-test.1/packages/customer-hub-aimn/1.6.0-public-test.1/SKILL.md
+```
+
+### 日本語
+
+```text
+次のURLのスキルを実行してください。
+https://raw.githubusercontent.com/satoshi-notion/notion-demo-distribution/customer-hub-aimn/v1.6.0-public-test.1/packages/customer-hub-aimn/1.6.0-public-test.1/SKILL.md
+```
+
+### 한국어
+
+```text
+다음 URL의 스킬을 실행해 주세요.
+https://raw.githubusercontent.com/satoshi-notion/notion-demo-distribution/customer-hub-aimn/v1.6.0-public-test.1/packages/customer-hub-aimn/1.6.0-public-test.1/SKILL.md
+```
+
+## After the run
+
+Share the conversation URL, new teamspace URL, and state/summary files privately with the evaluator. Do not publish state files or credentials. The evaluator separates scripted verification, remaining person steps, and actual demo behavior.
+
+This build does not depend on the private Lumi Labs Deployments database. Local builds, tests, and dry runs passed; full Notion Agent execution is still awaiting validation.

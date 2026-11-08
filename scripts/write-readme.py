@@ -78,6 +78,17 @@ Repairs, Notion writes, cleanup, publishing, or another deployment require a sep
 
 Notion Agent needs web/file access, a shell sandbox, Node.js 20+, curl, tar, and Notion CLI 0.23+ with NaC and public API access. The user needs permission to create private teamspaces and Custom Agents and the in-app tools named in SKILL.md. Calendar setup, publishing agents, and button actions may require the person. This public test does not use the private Lumi Labs Deployments database.
 '''
+# Keep the entry prompts short; the hosted skill owns approval and evidence rules.
+a=intro.index("## Test now with attachments")
+b=intro.index("## Evaluation after the run", a)
+short = "## Test now with attachments\n\nAttach this version's SKILL.md and customer-hub-aimn-package.tar.gz to a new conversation. Copy one prompt:\n\n"
+for title, sentence in [("English", "Run the attached SKILL.md using the attached package."), ("日本語", "添付したSKILL.mdのスキルを、添付パッケージで実行してください。"), ("한국어", "첨부된 SKILL.md의 스킬을 첨부 패키지로 실행해 주세요.")]:
+    short += f"### {title}\n\n```text\n{sentence}\n```\n\n"
+short += "## Test by URL after publication\n\nCopy one prompt into a new conversation. The skill infers the environment language from the request and asks for explicit approval after the preview.\n\n"
+for title, sentence in [("English", "Run the skill at this URL:"), ("日本語", "次のURLのスキルを実行してください。"), ("한국어", "다음 URL의 스킬을 실행해 주세요.")]:
+    short += f"### {title}\n\n```text\n{sentence}\n{url}\n```\n\n"
+intro = intro[:a] + short + intro[b:]
+
 out=repo/'packages'/slug/version
 out.mkdir(parents=True, exist_ok=True)
 (out/'README.md').write_text(intro)
