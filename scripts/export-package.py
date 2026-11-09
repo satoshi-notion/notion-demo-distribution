@@ -11,6 +11,11 @@ import zipfile
 from pathlib import Path
 
 source = Path(sys.argv[1]).resolve()
+# Accept either the consolidated private root or the original project-local layout.
+if (source / "demo-deployment-packages" / "solutions").is_dir():
+    source = source / "demo-deployment-packages"
+if not (source / "kit").is_dir() or not (source / "solutions").is_dir():
+    raise SystemExit("Choose the private operations root or its demo-deployment-packages directory.")
 repo = Path(__file__).resolve().parents[1]
 slug = "customer-hub-aimn"
 development_version = json.loads((source / "solutions" / slug / "solution.json").read_text())["version"]
@@ -62,7 +67,7 @@ with tempfile.TemporaryDirectory(prefix="notion-public-export-") as temporary:
     template = stage / "scripts/kit/skill-template.md"
     text = template.read_text()
     mention = '<mention url="{{deploymentsDatabase}}">Deployments</mention>'
-    text = text.replace(f"except the deployment record in {mention} and the agents the work order names", "except the agents the work order names")
+    text = text.replace(f"except the deployment record in {mention} and the agents the work order names", "except this deployment's record and evidence in the approved private history database, and the agents the work order names")
     text = text.replace(f", and can add records to {mention}", "")
     text = text.replace("edit the package and attach a new version to this page", "publish a new version of the package and these instructions")
     text = text.replace("Download and extract the attached archive <b>{{packageFile}}</b>. If more than one package is attached, use the newest. It has no npm dependencies.", f"Download the version-pinned archive from {release}/{{{{packageFile}}}}. It has no npm dependencies. If the user attached this exact package version, save that archive under the same filename and use it instead of downloading. In either mode, verify its SHA-256 against the value below before extracting it.")
@@ -70,20 +75,27 @@ with tempfile.TemporaryDirectory(prefix="notion-public-export-") as temporary:
     text = text.replace("Notion AI with web access and a sandbox", "Notion AI with access to the attached instructions/package (or web access for URL mode) and a sandbox")
     text = text.replace("Node.js 20 or later, `tar`", "Node.js 20 or later, `curl`, `tar`")
     text = text.replace("tar -xzf {{packageFile}}", f"if [ ! -f {{{{packageFile}}}} ]; then curl --fail --location --output {{{{packageFile}}}} '{release}/{{{{packageFile}}}}'; fi\n" + "CHECKSUM_COMMAND\ntar -xzf {{packageFile}}")
-    text = text.replace('node scripts/kit/deploy-new.mjs --record-in "{{deploymentsDatabase}}"', 'node scripts/kit/deploy-new.mjs')
+    text = text.replace('node scripts/kit/deploy-new.mjs --record-in "{{deploymentsDatabase}}"', 'node scripts/kit/deploy-new.mjs --record-in "HISTORY_DATABASE_URL"')
+    text = text.replace("## Step 1 — Check and preview", """## Private deployment history
+
+Before the preview, resolve the user's private history database URL in this destination workspace. Reuse the exact URL supplied in this conversation or a prior saved summary; never select by name alone. If unknown, offer **Use existing history / Create private history / Cancel**, using native choices when available. Existing history requires its exact URL and confirmation of private access outside demo teamspaces. The choice alone does not approve creation.
+
+For a new history, include **Demo Deployment History**, private access, and its creation in the deployment preview. Only after approval, create it with native tools outside the demo teamspace, with green Notion icons. Use columns: Name (title); Deployment ID, Workspace ID, Teamspace ID, Version (text); Locale (select: en, ja, ko); Workspace (select); Deployed at (date); Deployed by (person); Verification (select: Passed, Problems, Not run); Status (select: Active, Partially removed, Removed); Open (URL). No Package relation is required. If private placement or required tools cannot be verified, stop before deployment. Do not create a public/shared history or silently omit recording.
+
+Replace HISTORY_DATABASE_URL in Step 2 with that exact database URL. Show it in the approval preview for existing history. The approved scope includes adding this deployment's history record and private recovery attachments. The database itself survives demo cleanup. A different history destination requires a new preview and approval.
+
+## Step 1 — Check and preview""")
     a = text.index("The script uses a new state file", text.index("## Step 2"))
     b = text.index("\n| Exit code", a)
-    text = text[:a] + "The script builds and checks the package, applies it once to the CLI login's workspace, completes and verifies the records, and prints a JSON summary with teamspace, sidebar, agents, verify, statePath, and finish. This public test does not write to a Deployments database. Preserve the state file and summary as downloadable files for the user before the sandbox expires. Use only the URLs in this run's summary.\n" + text[b:]
-    text = text.replace("If it passes, set the deployment record's Verification to Passed. ", "")
+    text = text[:a] + "The script builds and checks the package, applies it once to the CLI login's workspace, completes and verifies the records, and writes one record to the approved private history database. It prints a summary with deploymentId, teamspace, sidebar, agents, verify, statePath, cleanupManifestPath, deploymentRecord, and finish. Preserve the state, final summary, and cleanup manifest privately before the sandbox expires. If history recording fails, report Blocked, preserve downloads, and never deploy again. Use only this run's IDs and URLs.\n" + text[b:]
     text = text.replace("its deployment record lists the failed step as a problem", "the summary lists the failed step as a problem")
     text = text.replace("the deployment record's Deployed by", "any person properties listed in the work order")
-    text = text.replace("Deployment record: [deploymentRecord.url]. ", "")
-    text = text.replace("Deployment record: [deploymentRecord.url] · ", "")
     text = text.replace("and its deployment record lists the problem", "and the summary lists the problem")
     text = text.replace("check the agent URLs on the deployment record", "check the agent URLs in the saved deployment summary")
     text = text.replace("3. Set the deployment record's Status to Removed. Keep the record: Deployments is the history of who deployed which package and when.", "3. Keep the saved state and summary for your records.")
     text += "\n\n## Evaluation evidence\n\nAt the end, provide the teamspace URL, selected locale, package version, the complete T1–T10 results, and the remaining person steps. Make the deployment state JSON and its summary JSON available as downloadable files before the sandbox expires. Include the full final verify --finish output in the chat or a downloadable text file. If blocked, preserve available evidence and report the exact failure. Never include authentication tokens, credentials, or environment-variable dumps. A pending person step is not completed merely because the scripted checks pass.\n"
     template.write_text(text)
+    shutil.copyfile(stage / "CLEANUP.md", out / "CLEANUP.md")
     subprocess.run(["node", "scripts/kit/render-skill.mjs", "--deployments", base, "--out", str(out / "SKILL.md")], cwd=stage, check=True)
     subprocess.run(["npm", "run", "build"], cwd=stage, check=True)
     subprocess.run(["node", "scripts/kit/check-locales.mjs"], cwd=stage, check=True)
@@ -105,7 +117,7 @@ with tempfile.TemporaryDirectory(prefix="notion-public-export-") as temporary:
 
 bundle = out / f"{slug}-{version}-distribution.zip"
 with zipfile.ZipFile(bundle, "w", compression=zipfile.ZIP_DEFLATED) as zip:
-    for name in ["README.md", "SKILL.md", f"{slug}-package.tar.gz", "SHA256SUMS", "release-notes.md"]:
+    for name in ["README.md", "SKILL.md", "CLEANUP.md", f"{slug}-package.tar.gz", "SHA256SUMS", "release-notes.md"]:
         zip.write(out / name, arcname=f"{slug}-{version}/{name}")
 print(out)
 print(bundle)

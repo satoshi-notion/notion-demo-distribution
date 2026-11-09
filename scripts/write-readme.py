@@ -88,6 +88,19 @@ short += "## Test by URL after publication\n\nCopy one prompt into a new convers
 for title, sentence in [("English", "Run the skill at this URL:"), ("日本語", "次のURLのスキルを実行してください。"), ("한국어", "다음 URL의 스킬을 실행해 주세요.")]:
     short += f"### {title}\n\n```text\n{sentence}\n{url}\n```\n\n"
 intro = intro[:a] + short + intro[b:]
+cleanup_url = url.removesuffix("SKILL.md") + "CLEANUP.md"
+history = """## Private deployment history and cleanup
+
+Setup reuses an explicitly identified private history database in your destination workspace, or offers to create one after approval. History stays outside demo teamspaces. Each environment gets its own record with workspace/teamspace IDs, timestamp, version, locale, state, summary, and cleanup manifest. Keep these records private; the author's central database is never required.
+
+To remove one environment, copy its history-record URL and pass it with the cleanup skill. Cleanup first inspects and previews the exact current scope, then waits for explicit approval. Later user-created descendants are included in that preview. Unsupported agent/teamspace deletion remains a manual step; history and evidence are retained. Older deployments without a cleanup manifest need a separately reviewed inventory.
+
+"""
+for title, sentence in [("English", "Run the cleanup skill at this URL for the deployment history record below:"), ("日本語", "次のURLの削除スキルを、以下のデプロイ履歴に対して実行してください。"), ("한국어", "다음 URL의 정리 스킬을 아래 배포 기록에 대해 실행해 주세요.")]:
+    history += f"### {title}\n\n```text\n{sentence}\n{cleanup_url}\n<HISTORY_RECORD_URL>\n```\n\n"
+intro = intro.replace("## Evaluation after the run", history + "## Evaluation after the run")
+intro = intro.replace("This public test does not use the private Lumi Labs Deployments database.", "This public test uses your approved private history database, not the author's Lumi Labs database.")
+intro = intro.replace("- `SHA256SUMS`: archive checksum.", "- `CLEANUP.md`: separate cleanup skill; requires a deployment-history record and manifest.\n- `SHA256SUMS`: archive checksum.")
 
 out=repo/'packages'/slug/version
 out.mkdir(parents=True, exist_ok=True)
@@ -99,7 +112,7 @@ Versioned Notion demo packages and hosted Notion Agent instructions. Development
 ## Customer Hub with AIMN
 
 - **Prepared multilingual test:** [{version}](packages/{slug}/{version}/README.md) — English, Japanese, and Korean in one archive. Not published yet. The version README contains copy-and-paste attachment and URL prompts, plus the evaluation procedure.
-- **Previously published test:** [1.5.0-public-test.1](https://github.com/satoshi-notion/notion-demo-distribution/releases/tag/customer-hub-aimn/v1.5.0-public-test.1) — does not include the multilingual changes.
+- **Previously published test:** [1.6.1-public-test.1](https://github.com/satoshi-notion/notion-demo-distribution/releases/tag/customer-hub-aimn/v1.6.1-public-test.1) — multilingual setup with native choice preferences; predates cleanup manifests.
 
 Start with the [multilingual test README](packages/{slug}/{version}/README.md). For an immediate local-artifact test, attach its SKILL.md and package to Notion Agent and use the attachment prompt. Use the version-pinned URL prompt after that version is published.
 

@@ -4,10 +4,10 @@ Versioned Notion demo packages and hosted Notion Agent instructions. Development
 
 ## Customer Hub with AIMN
 
-- **Published multilingual test:** [1.6.1-public-test.1](packages/customer-hub-aimn/1.6.1-public-test.1/README.md) — English, Japanese, and Korean in one archive. Published prerelease. The version README contains copy-and-paste attachment and URL prompts, plus the evaluation procedure.
-- **Previously published test:** [1.5.0-public-test.1](https://github.com/satoshi-notion/notion-demo-distribution/releases/tag/customer-hub-aimn/v1.5.0-public-test.1) — does not include the multilingual changes.
+- **Prepared multilingual test:** [1.7.0-public-test.1](packages/customer-hub-aimn/1.7.0-public-test.1/README.md) — English, Japanese, and Korean in one archive. Not published yet. The version README contains copy-and-paste attachment and URL prompts, plus the evaluation procedure.
+- **Previously published test:** [1.6.1-public-test.1](https://github.com/satoshi-notion/notion-demo-distribution/releases/tag/customer-hub-aimn/v1.6.1-public-test.1) — multilingual setup with native choice preferences; predates cleanup manifests.
 
-Start with the [multilingual test README](packages/customer-hub-aimn/1.6.1-public-test.1/README.md). Use the version-pinned URL prompt for the complete public download flow. The attachment prompt is also available for a file-based test.
+Start with the [multilingual test README](packages/customer-hub-aimn/1.7.0-public-test.1/README.md). For an immediate local-artifact test, attach its SKILL.md and package to Notion Agent and use the attachment prompt. Use the version-pinned URL prompt after that version is published.
 
 ## Maintainer export
 
